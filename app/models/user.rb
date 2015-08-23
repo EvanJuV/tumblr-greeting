@@ -1,7 +1,5 @@
 class User < ActiveRecord::Base  
 	has_one :list
-	require "oauth"
-	require "omniauth-tumblr"
 
   def self.create_with_omniauth(auth)  
     create! do |user|  
@@ -14,22 +12,37 @@ class User < ActiveRecord::Base
   end
 
   def self.prepare_access_token(user)
-  	consumer = OAuth::Consumer.new("wUoVuaj6WJbMe4jLT1JXx1Pv14F8weXKm4cIXIGX1G1UKzde6R", "zDCLgZ4sLx82GY08kMbf9JHUUHHtNtlJU4eSPKS6RvlvQ6jypY",
-  	{:site => "http://www.tumblr.com/"})
-  	token_hash = {:oauth_token => user.token, :oauth_token_secret => user.secret}
-  	access_token = OAuth::AccessToken.from_hash(consumer, token_hash)
+    Tumblr.configure do |config|
+      config.consumer_key = "wUoVuaj6WJbMe4jLT1JXx1Pv14F8weXKm4cIXIGX1G1UKzde6R"
+      config.consumer_secret = "zDCLgZ4sLx82GY08kMbf9JHUUHHtNtlJU4eSPKS6RvlvQ6jypY"
+      config.oauth_token = user.token
+      config.oauth_token_secret = user.secret
+    end
+
+    client = Tumblr::Client.new
   end
 
   def self.get_followers(user)
-  	access_token = User.prepare_access_token(user)
-  	response = access_token.get("http://api.tumblr.com/v2/blog/#{user.uid}.tumblr.com/followers")
-  	result = JSON.parse(response.body)
-  	result["response"]["users"].map {|u| u["name"]}
+  	client = User.prepare_access_token(user)
+  	response = client.followers("#{user.uid}.tumblr.com")
+  	response["users"].map {|u| u["name"]}
   end
 
   def self.new_text_post(title = '', body, user)
-  	access_token = User.prepare_access_token(user)
-  	response = access_token.post("http://api.tumblr.com/v2/blog/#{user.uid}.tumblr.com/post",
-		{:title => title, :body => body, :type => 'text', :format => 'html'})
+  	client = User.prepare_access_token(user)
+  	response = client.text("#{user.uid}.tumblr.com",
+		{:title => title, :body => body, :format => 'html'})
+    if defined? response.body['meta']
+      false
+    end
+  end
+
+  def self.new_image_post(image, caption, user)
+    client = User.prepare_access_token(user)
+    client.photo("#{user.uid}.tumblr.com", 
+    {:data => [image], :caption => caption, :format => 'html'})
+    if defined? response.body['meta']
+      false
+    end
   end
 end  
