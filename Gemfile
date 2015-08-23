@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rails', '4.2.1'
-gem 'sqlite3'
+gem 'sqlite3',  :group => [:development, :test]
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.1.0'
@@ -20,7 +20,7 @@ group :development, :test do
 end
 
 group :production do
-	gem 'rails_12factor', '0.0.2'
-	gem 'puma',						'2.11.1'
+	gem 'thin'
+	gem 'pg'
 end
 
