@@ -1,7 +1,4 @@
 Rails.application.routes.draw do
-	# authenticated :user do
-	#   root :to => "interactions#index"
-	# end
 
   root to: "static_pages#index"
 

@@ -39,4 +39,6 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+  TUMBLR_KEY = "wUoVuaj6WJbMe4jLT1JXx1Pv14F8weXKm4cIXIGX1G1UKzde6R"
+  TUMBLR_SECRET = "zDCLgZ4sLx82GY08kMbf9JHUUHHtNtlJU4eSPKS6RvlvQ6jypY"
 end

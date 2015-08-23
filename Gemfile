@@ -13,6 +13,8 @@ gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'semantic-ui-sass', github: 'doabit/semantic-ui-sass'
 gem 'carrierwave'
+gem 'omniauth'
+gem 'omniauth-tumblr'
 gem 'tumblr_client'
 
 group :development, :test do

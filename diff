@@ -1,0 +1,652 @@
+diff --git a/Gemfile b/Gemfile
+index 1d32f86..945b5f1 100644
+--- a/Gemfile
++++ b/Gemfile
+@@ -1,7 +1,9 @@
+ source 'https://rubygems.org'
+ 
++ruby '2.2.2'
++
+ gem 'rails', '4.2.1'
+-gem 'sqlite3'
++gem 'sqlite3',  :group => [:development, :test]
+ gem 'sass-rails', '~> 5.0'
+ gem 'uglifier', '>= 1.3.0'
+ gem 'coffee-rails', '~> 4.1.0'
+@@ -10,8 +12,8 @@ gem 'turbolinks'
+ gem 'jbuilder', '~> 2.0'
+ gem 'sdoc', '~> 0.4.0', group: :doc
+ gem 'semantic-ui-sass', github: 'doabit/semantic-ui-sass'
+-gem 'tumblr-api', :source => 'http://gemcutter.org'
+-gem 'omniauth-tumblr'
++gem 'carrierwave'
++gem 'tumblr_client'
+ 
+ group :development, :test do
+   gem 'byebug'
+@@ -19,3 +21,8 @@ group :development, :test do
+   gem 'spring'
+ end
+ 
++group :production do
++	gem 'thin'
++	gem 'pg'
++end
++
+diff --git a/Gemfile.lock b/Gemfile.lock
+index c2e190d..63a9345 100644
+--- a/Gemfile.lock
++++ b/Gemfile.lock
+@@ -7,7 +7,6 @@ GIT
+ 
+ GEM
+   remote: https://rubygems.org/
+-  remote: http://gemcutter.org/
+   specs:
+     actionmailer (4.2.1)
+       actionpack (= 4.2.1)
+@@ -49,6 +48,11 @@ GEM
+       debug_inspector (>= 0.0.1)
+     builder (3.2.2)
+     byebug (6.0.2)
++    carrierwave (0.10.0)
++      activemodel (>= 3.2.0)
++      activesupport (>= 3.2.0)
++      json (>= 1.7)
++      mime-types (>= 1.16)
+     coffee-rails (4.1.0)
+       coffee-script (>= 2.2.0)
+       railties (>= 4.0.0, < 5.0)
+@@ -56,15 +60,17 @@ GEM
+       coffee-script-source
+       execjs
+     coffee-script-source (1.9.1.1)
++    daemons (1.2.3)
+     debug_inspector (0.0.2)
+     erubis (2.7.0)
++    eventmachine (1.0.8)
+     execjs (2.6.0)
++    faraday (0.9.1)
++      multipart-post (>= 1.2, < 3)
++    faraday_middleware (0.9.2)
++      faraday (>= 0.7.4, < 0.10)
+     globalid (0.3.6)
+       activesupport (>= 4.1.0)
+-    hashie (3.4.2)
+-    httparty (0.13.5)
+-      json (~> 1.8)
+-      multi_xml (>= 0.5.2)
+     i18n (0.7.0)
+     jbuilder (2.3.1)
+       activesupport (>= 3.0.0, < 5)
+@@ -82,18 +88,11 @@ GEM
+     mini_portile (0.6.2)
+     minitest (5.8.0)
+     multi_json (1.11.2)
+-    multi_xml (0.5.5)
++    multipart-post (2.0.0)
+     nokogiri (1.6.6.2)
+       mini_portile (~> 0.6.0)
+     oauth (0.4.7)
+-    omniauth (1.2.2)
+-      hashie (>= 1.2, < 4)
+-      rack (~> 1.0)
+-    omniauth-oauth (1.1.0)
+-      oauth
+-      omniauth (~> 1.0)
+-    omniauth-tumblr (1.1)
+-      omniauth-oauth (~> 1.0)
++    pg (0.18.2)
+     rack (1.6.4)
+     rack-test (0.6.3)
+       rack (>= 1.0)
+@@ -133,6 +132,7 @@ GEM
+     sdoc (0.4.1)
+       json (~> 1.7, >= 1.7.7)
+       rdoc (~> 4.0)
++    simple_oauth (0.3.1)
+     spring (1.3.6)
+     sprockets (3.3.3)
+       rack (~> 1.0)
+@@ -141,12 +141,20 @@ GEM
+       activesupport (>= 3.0)
+       sprockets (>= 2.8, < 4.0)
+     sqlite3 (1.3.10)
++    thin (1.6.3)
++      daemons (~> 1.0, >= 1.0.9)
++      eventmachine (~> 1.0)
++      rack (~> 1.0)
+     thor (0.19.1)
+     thread_safe (0.3.5)
+     tilt (1.4.1)
+-    tumblr-api (0.1.4)
+-      activesupport
+-      httparty
++    tumblr_client (0.8.5)
++      faraday (~> 0.9.0)
++      faraday_middleware (~> 0.9.0)
++      json
++      mime-types
++      oauth
++      simple_oauth
+     turbolinks (2.5.3)
+       coffee-rails
+     tzinfo (1.2.2)
+@@ -165,17 +173,19 @@ PLATFORMS
+ 
+ DEPENDENCIES
+   byebug
++  carrierwave
+   coffee-rails (~> 4.1.0)
+   jbuilder (~> 2.0)
+   jquery-rails
+-  omniauth-tumblr
++  pg
+   rails (= 4.2.1)
+   sass-rails (~> 5.0)
+   sdoc (~> 0.4.0)
+   semantic-ui-sass!
+   spring
+   sqlite3
+-  tumblr-api!
++  thin
++  tumblr_client
+   turbolinks
+   uglifier (>= 1.3.0)
+   web-console (~> 2.0)
+diff --git a/app/assets/javascripts/application.js b/app/assets/javascripts/application.js
+index 3adfd1f..3def190 100644
+--- a/app/assets/javascripts/application.js
++++ b/app/assets/javascripts/application.js
+@@ -14,4 +14,4 @@
+ //= require jquery_ujs
+ //= require semantic-ui
+ //= require turbolinks
+-//= require_tree .
++//= require_tree .
+\ No newline at end of file
+diff --git a/app/controllers/application_controller.rb b/app/controllers/application_controller.rb
+index a4af93c..b3e072e 100644
+--- a/app/controllers/application_controller.rb
++++ b/app/controllers/application_controller.rb
+@@ -2,10 +2,22 @@ class ApplicationController < ActionController::Base
+   # Prevent CSRF attacks by raising an exception.
+   # For APIs, you may want to use :null_session instead.
+   protect_from_forgery with: :exception
+-  helper_method :current_user
+-  
++  helper_method :current_user, :all_followers, :new_followers
++
+ 	private  
+   def current_user  
+     @current_user ||= User.find(session[:user_id]) if session[:user_id]  
+   end 
++
++  def all_followers
++    @followers = User.get_followers(current_user)
++  end
++
++  def new_followers
++    if old_list = current_user.list
++      all_followers - old_list.followers
++    else
++      all_followers
++    end
++  end
+ end
+diff --git a/app/controllers/posts_controller.rb b/app/controllers/posts_controller.rb
+deleted file mode 100644
+index a599e9a..0000000
+--- a/app/controllers/posts_controller.rb
++++ /dev/null
+@@ -1,4 +0,0 @@
+-class PostsController < ApplicationController
+-	def index
+-	end
+-end
+diff --git a/app/controllers/sessions_controller.rb b/app/controllers/sessions_controller.rb
+index a72ef2a..8823242 100644
+--- a/app/controllers/sessions_controller.rb
++++ b/app/controllers/sessions_controller.rb
+@@ -3,6 +3,21 @@ class SessionsController < ApplicationController
+   	auth = request.env["omniauth.auth"]
+   	user = User.find_by_provider_and_uid(auth["provider"], auth["uid"]) || User.create_with_omniauth(auth)
+   	session[:user_id] = user.id
+-  	redirect_to posts_path, :notice => "Signed in!"
+-  end  
++  	redirect_to users_interactions_path, :notice => "Signed in!"
++  end
++
++	def destroy
++    if current_user.list
++      current_user.list.delete
++    end
++
++    list = List.new(user_id: current_user.id, followers: all_followers)
++    
++    unless list.save
++      flash[:alert] = "Oops! Error saving current followers. Try again later."
++    end
++
++		session[:user_id] = nil  
++		redirect_to root_url, :notice => "Signed out!"  
++	end  
+ end  
+\ No newline at end of file
+diff --git a/app/controllers/static_pages_controller.rb b/app/controllers/static_pages_controller.rb
+index 4144ce2..3632b95 100644
+--- a/app/controllers/static_pages_controller.rb
++++ b/app/controllers/static_pages_controller.rb
+@@ -1,4 +1,6 @@
+ class StaticPagesController < ApplicationController
++	# before_action if current_user? 
++
+ 	def index
+ 	end
+ end
+diff --git a/app/controllers/users/interactions_controller.rb b/app/controllers/users/interactions_controller.rb
+new file mode 100644
+index 0000000..ed9252d
+--- /dev/null
++++ b/app/controllers/users/interactions_controller.rb
+@@ -0,0 +1,29 @@
++class Users::InteractionsController < ApplicationController
++	def index
++	end
++
++	def new_post
++		if post_params[:image]
++			uploader = ImageUploader.new 
++			uploader.cache!(post_params[:image])
++			file_path = uploader.file.path
++			if User.new_image_post(file_path, post_params[:body], current_user)
++				flash[:notice] = "Post created"
++			else
++				flash[:alert] = "The post couldn't be created"
++			end
++		else
++			if User.new_text_post(post_params[:title], post_params[:body], current_user)
++				flash[:notice] = "Post created"
++			else
++				flash[:alert] = "The post couldn't be created"
++			end
++		end
++		redirect_to users_interactions_path
++	end
++
++	private
++	def post_params
++		params.require(:post).permit :utf8, :multipart, :title, :body, :image
++	end
++end
+diff --git a/app/controllers/users/omniauth_callbacks_controller.rb b/app/controllers/users/omniauth_callbacks_controller.rb
+deleted file mode 100644
+index d459aba..0000000
+--- a/app/controllers/users/omniauth_callbacks_controller.rb
++++ /dev/null
+@@ -1,14 +0,0 @@
+-class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+-  def tumblr
+-    # You need to implement the method below in your model (e.g. app/models/user.rb)
+-    @user = User.from_omniauth(request.env["omniauth.auth"])
+-
+-    if @user.persisted?
+-      sign_in_and_redirect @user, :event => :authentication #this will throw if @user is not activated
+-      set_flash_message(:notice, :success, :kind => "Tumblr") if is_navigational_format?
+-    else
+-      session["devise.tumblr_data"] = request.env["omniauth.auth"].except("extra")
+-      redirect_to new_user_registration_url
+-    end
+-  end
+-end
+\ No newline at end of file
+diff --git a/app/models/list.rb b/app/models/list.rb
+new file mode 100644
+index 0000000..f95fa83
+--- /dev/null
++++ b/app/models/list.rb
+@@ -0,0 +1,4 @@
++class List < ActiveRecord::Base
++	belongs_to :user
++	serialize :followers, Array
++end
+diff --git a/app/models/post.rb b/app/models/post.rb
+new file mode 100644
+index 0000000..dcba481
+--- /dev/null
++++ b/app/models/post.rb
+@@ -0,0 +1,3 @@
++class Post < ActiveRecord::Base
++	mount_uploader :image, ImageUploader  
++end
+diff --git a/app/models/user.rb b/app/models/user.rb
+index 05245de..740c71f 100644
+--- a/app/models/user.rb
++++ b/app/models/user.rb
+@@ -1,9 +1,48 @@
+ class User < ActiveRecord::Base  
++	has_one :list
++
+   def self.create_with_omniauth(auth)  
+     create! do |user|  
+       user.provider = auth["provider"]  
+       user.uid = auth["uid"]  
+-      user.name = auth["info"]["name"]  
++      user.name = auth["info"]["name"]
++      user.token = auth.credentials.token
++      user.secret = auth.credentials.secret  
+     end  
+-  end  
++  end
++
++  def self.prepare_access_token(user)
++    Tumblr.configure do |config|
++      config.consumer_key = "wUoVuaj6WJbMe4jLT1JXx1Pv14F8weXKm4cIXIGX1G1UKzde6R"
++      config.consumer_secret = "zDCLgZ4sLx82GY08kMbf9JHUUHHtNtlJU4eSPKS6RvlvQ6jypY"
++      config.oauth_token = user.token
++      config.oauth_token_secret = user.secret
++    end
++
++    client = Tumblr::Client.new
++  end
++
++  def self.get_followers(user)
++  	client = User.prepare_access_token(user)
++  	response = client.followers("#{user.uid}.tumblr.com")
++  	response["users"].map {|u| u["name"]}
++  end
++
++  def self.new_text_post(title = '', body, user)
++  	client = User.prepare_access_token(user)
++  	response = client.text("#{user.uid}.tumblr.com",
++		{:title => title, :body => body, :format => 'html'})
++    if defined? response.body['meta']
++      false
++    end
++  end
++
++  def self.new_image_post(image, caption, user)
++    client = User.prepare_access_token(user)
++    client.photo("#{user.uid}.tumblr.com", 
++    {:data => [image], :caption => caption, :format => 'html'})
++    if defined? response.body['meta']
++      false
++    end
++  end
+ end  
+\ No newline at end of file
+diff --git a/app/uploaders/image_uploader.rb b/app/uploaders/image_uploader.rb
+new file mode 100644
+index 0000000..1f26514
+--- /dev/null
++++ b/app/uploaders/image_uploader.rb
+@@ -0,0 +1,22 @@
++# encoding: utf-8
++
++class ImageUploader < CarrierWave::Uploader::Base
++
++  # Include RMagick or MiniMagick support:
++  # include CarrierWave::RMagick
++  # include CarrierWave::MiniMagick
++
++  # Choose what kind of storage to use for this uploader:
++  storage :file
++  # storage :fog
++
++  # Override the directory where uploaded files will be stored.
++  # This is a sensible default for uploaders that are meant to be mounted:
++  def store_dir
++    "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
++  end
++
++  def cache_dir
++    "/tmp/tumblr-cache"
++  end
++end
+diff --git a/app/views/layouts/application.html.erb b/app/views/layouts/application.html.erb
+index 47661c5..a031fad 100644
+--- a/app/views/layouts/application.html.erb
++++ b/app/views/layouts/application.html.erb
+@@ -7,9 +7,16 @@
+   <%= csrf_meta_tags %>
+ </head>
+ <body>
+-   	<p class="notice"><%= notice %></p>
++ 	<p class="notice"><%= notice %></p>
+ 	<p class="alert"><%= alert %></p>
+-
++	<div>
++		<% if current_user %>
++			Welcome, <%= current_user.name %>!
++			<%= link_to "Sign out", signout_path %>
++		<% else %>
++			<%= link_to "Sign in with Tumblr", '/auth/tumblr' %>
++		<% end %>
++	</div>
+ 
+ <%= yield %>
+ 
+diff --git a/app/views/posts/index.html.erb b/app/views/posts/index.html.erb
+deleted file mode 100644
+index 67bbbfc..0000000
+--- a/app/views/posts/index.html.erb
++++ /dev/null
+@@ -1 +0,0 @@
+-Ya llegamos, culito
+diff --git a/app/views/static_pages/index.html.erb b/app/views/static_pages/index.html.erb
+index b946f97..e69de29 100644
+--- a/app/views/static_pages/index.html.erb
++++ b/app/views/static_pages/index.html.erb
+@@ -1 +0,0 @@
+-<%= link_to "Sign in with Tumblr", '/auth/tumblr' %>
+\ No newline at end of file
+diff --git a/app/views/users/interactions/index.html.erb b/app/views/users/interactions/index.html.erb
+new file mode 100644
+index 0000000..24bcb34
+--- /dev/null
++++ b/app/views/users/interactions/index.html.erb
+@@ -0,0 +1,21 @@
++<h1>New Followers</h1>
++<% new_followers.each do |n| %>
++	<%= n %>
++<% end %>
++
++<%= form_for :post, :url => url_for(:controller => 'interactions', :action => 'new_post') , method: 'post', html: { multipart: true } do |f| %>
++	<%= f.file_field :image, accept: 'image/png,image/gif,image/jpeg' %>
++	<%= f.label(:title, 'Title') %>
++	<%= f.text_field(:title) %>
++	<%= f.label(:pre_body, 'Body') %>
++	<%= f.text_area(:pre_body) %>
++	<%= f.hidden_field :body %>
++	<%= f.submit('Submit post', id: 'btn') %>
++<% end %>
++
++<%= javascript_tag do %>
++	$('#btn').on('click', function() {
++	  combined = $('#post_pre_body').val() + '\n\n<% new_followers.each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
++	  $('#post_body').val(combined);
++	})
++<% end %>
+\ No newline at end of file
+diff --git a/config/initializers/omniauth.rb b/config/initializers/omniauth.rb
+deleted file mode 100644
+index 3979bd4..0000000
+--- a/config/initializers/omniauth.rb
++++ /dev/null
+@@ -1,3 +0,0 @@
+-    Rails.application.config.middleware.use OmniAuth::Builder do  
+-      provider :tumblr, '76pPJCCa3tVB6ypARDSi6I4uUiQmmoZeGeWnSzvHg1zfVsDOuM', 'xdeh76OPo7ZOKuboqvmcAN5DkIujlAEkT4ULplbDGo9bDbQGIt' 
+-    end  
+\ No newline at end of file
+diff --git a/config/routes.rb b/config/routes.rb
+index 75bfdd7..a5800df 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -1,11 +1,15 @@
+ Rails.application.routes.draw do
+-	authenticated :user do
+-	  root :to => "posts#index"
+-	end
++	# authenticated :user do
++	#   root :to => "interactions#index"
++	# end
+ 
+   root to: "static_pages#index"
+ 
+   match "auth/:provider/callback" => "sessions#create", via: [:get]
++  match "/signout" => "sessions#destroy", :as => :signout, via: [:get]  
+ 
+-  resources :posts
++  namespace :users do
++  	resources :interactions
++  	match "/new_post" => "interactions#new_post", via: [:post]
++  end
+ end
+diff --git a/db/migrate/20150822233745_add_columns_to_user.rb b/db/migrate/20150822233745_add_columns_to_user.rb
+new file mode 100644
+index 0000000..b96c8ac
+--- /dev/null
++++ b/db/migrate/20150822233745_add_columns_to_user.rb
+@@ -0,0 +1,6 @@
++class AddColumnsToUser < ActiveRecord::Migration
++  def change
++    add_column :users, :token, :string
++    add_column :users, :secret, :string
++  end
++end
+diff --git a/db/migrate/20150823012629_create_lists.rb b/db/migrate/20150823012629_create_lists.rb
+new file mode 100644
+index 0000000..047537e
+--- /dev/null
++++ b/db/migrate/20150823012629_create_lists.rb
+@@ -0,0 +1,9 @@
++class CreateLists < ActiveRecord::Migration
++  def change
++    create_table :lists do |t|
++      t.text :followers
++
++      t.timestamps null: false
++    end
++  end
++end
+diff --git a/db/migrate/20150823021113_add_user_id_to_lists.rb b/db/migrate/20150823021113_add_user_id_to_lists.rb
+new file mode 100644
+index 0000000..1204faf
+--- /dev/null
++++ b/db/migrate/20150823021113_add_user_id_to_lists.rb
+@@ -0,0 +1,5 @@
++class AddUserIdToLists < ActiveRecord::Migration
++  def change
++    add_column :lists, :user_id, :integer
++  end
++end
+diff --git a/db/migrate/20150823083331_create_posts.rb b/db/migrate/20150823083331_create_posts.rb
+new file mode 100644
+index 0000000..0a37e9d
+--- /dev/null
++++ b/db/migrate/20150823083331_create_posts.rb
+@@ -0,0 +1,11 @@
++class CreatePosts < ActiveRecord::Migration
++  def change
++    create_table :posts do |t|
++      t.string :image
++      t.string :title
++      t.string :body
++
++      t.timestamps null: false
++    end
++  end
++end
+diff --git a/db/schema.rb b/db/schema.rb
+index ff394a0..88c9e12 100644
+--- a/db/schema.rb
++++ b/db/schema.rb
+@@ -11,7 +11,22 @@
+ #
+ # It's strongly recommended that you check this file into your version control system.
+ 
+-ActiveRecord::Schema.define(version: 20150822224535) do
++ActiveRecord::Schema.define(version: 20150823083331) do
++
++  create_table "lists", force: :cascade do |t|
++    t.text     "followers"
++    t.datetime "created_at", null: false
++    t.datetime "updated_at", null: false
++    t.integer  "user_id"
++  end
++
++  create_table "posts", force: :cascade do |t|
++    t.string   "image"
++    t.string   "title"
++    t.string   "body"
++    t.datetime "created_at", null: false
++    t.datetime "updated_at", null: false
++  end
+ 
+   create_table "users", force: :cascade do |t|
+     t.string   "provider"
+@@ -19,6 +34,8 @@ ActiveRecord::Schema.define(version: 20150822224535) do
+     t.string   "name"
+     t.datetime "created_at", null: false
+     t.datetime "updated_at", null: false
++    t.string   "token"
++    t.string   "secret"
+   end
+ 
+ end
+diff --git a/test/fixtures/lists.yml b/test/fixtures/lists.yml
+new file mode 100644
+index 0000000..21576a5
+--- /dev/null
++++ b/test/fixtures/lists.yml
+@@ -0,0 +1,7 @@
++# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
++
++one:
++  followers: MyString
++
++two:
++  followers: MyString
+diff --git a/test/fixtures/posts.yml b/test/fixtures/posts.yml
+new file mode 100644
+index 0000000..06a2095
+--- /dev/null
++++ b/test/fixtures/posts.yml
+@@ -0,0 +1,11 @@
++# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
++
++one:
++  image: MyString
++  title: MyString
++  body: MyString
++
++two:
++  image: MyString
++  title: MyString
++  body: MyString
+diff --git a/test/models/list_test.rb b/test/models/list_test.rb
+new file mode 100644
+index 0000000..67687ce
+--- /dev/null
++++ b/test/models/list_test.rb
+@@ -0,0 +1,7 @@
++require 'test_helper'
++
++class ListTest < ActiveSupport::TestCase
++  # test "the truth" do
++  #   assert true
++  # end
++end
+diff --git a/test/models/post_test.rb b/test/models/post_test.rb
+new file mode 100644
+index 0000000..6d9d463
+--- /dev/null
++++ b/test/models/post_test.rb
+@@ -0,0 +1,7 @@
++require 'test_helper'
++
++class PostTest < ActiveSupport::TestCase
++  # test "the truth" do
++  #   assert true
++  # end
++end

@@ -13,8 +13,8 @@ class User < ActiveRecord::Base
 
   def self.prepare_access_token(user)
     Tumblr.configure do |config|
-      config.consumer_key = "wUoVuaj6WJbMe4jLT1JXx1Pv14F8weXKm4cIXIGX1G1UKzde6R"
-      config.consumer_secret = "zDCLgZ4sLx82GY08kMbf9JHUUHHtNtlJU4eSPKS6RvlvQ6jypY"
+      config.consumer_key = '76pPJCCa3tVB6ypARDSi6I4uUiQmmoZeGeWnSzvHg1zfVsDOuM'
+      config.consumer_secret = 'xdeh76OPo7ZOKuboqvmcAN5DkIujlAEkT4ULplbDGo9bDbQGIt'
       config.oauth_token = user.token
       config.oauth_token_secret = user.secret
     end
