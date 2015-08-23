@@ -23,6 +23,13 @@ class User < ActiveRecord::Base
   def self.get_followers(user)
   	access_token = User.prepare_access_token(user)
   	response = access_token.get("http://api.tumblr.com/v2/blog/#{user.uid}.tumblr.com/followers")
-  	JSON.parse(response.body)
+  	result = JSON.parse(response.body)
+  	result["response"]["users"].map {|u| u["name"]}
+  end
+
+  def self.new_text_post(title = '', body, user)
+  	access_token = User.prepare_access_token(user)
+  	response = access_token.post("http://api.tumblr.com/v2/blog/#{user.uid}.tumblr.com/post",
+		{:title => title, :body => body, :type => 'text', :format => 'html'})
   end
 end  

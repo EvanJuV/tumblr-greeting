@@ -1,4 +1,4 @@
 class List < ActiveRecord::Base
 	belongs_to :user
-	serialize :followers, JSON
+	serialize :followers, Array
 end

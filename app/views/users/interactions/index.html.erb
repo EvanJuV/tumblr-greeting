@@ -1,1 +1,20 @@
-<%= @followers %>
+<h1>New Followers</h1>
+<% new_followers.each do |n| %>
+	<%= n %>
+<% end %>
+
+<%= form_tag(action: 'new_post', method: 'post', remote: true) do %>
+	<%= label_tag(:title, 'Title') %>
+	<%= text_field_tag(:title) %>
+	<%= label_tag(:pre_body, 'Body') %>
+	<%= text_area_tag(:pre_body) %>
+	<%= hidden_field_tag :body %>
+	<%= submit_tag('Submit post', id: 'btn') %>
+<% end %>
+
+<%= javascript_tag do %>
+	$('#btn').on('click', function() {
+	  combined = $('#pre_body').val() + '\n\n<% new_followers.each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
+	  $('#body').val(combined);
+	})
+<% end %>
