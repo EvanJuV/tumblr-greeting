@@ -13,8 +13,8 @@ class User < ActiveRecord::Base
 
   def self.prepare_access_token(user)
     Tumblr.configure do |config|
-      config.consumer_key = '76pPJCCa3tVB6ypARDSi6I4uUiQmmoZeGeWnSzvHg1zfVsDOuM'
-      config.consumer_secret = 'xdeh76OPo7ZOKuboqvmcAN5DkIujlAEkT4ULplbDGo9bDbQGIt'
+      config.consumer_key = Figaro.env.tumblr_key
+      config.consumer_secret = Figaro.env.tumblr_secret
       config.oauth_token = user.token
       config.oauth_token_secret = user.secret
     end
@@ -32,7 +32,7 @@ class User < ActiveRecord::Base
   	client = User.prepare_access_token(user)
   	response = client.text("#{user.uid}.tumblr.com",
 		{:title => title, :body => body, :format => 'html'})
-    if defined? response.body['meta']
+    if defined? response.body['meta'].include?[400..401]
       false
     end
   end
@@ -41,7 +41,7 @@ class User < ActiveRecord::Base
     client = User.prepare_access_token(user)
     client.photo("#{user.uid}.tumblr.com", 
     {:data => [image], :caption => caption, :format => 'html'})
-    if defined? response.body['meta']
+    if defined? response.body['meta'].include?[400..401]
       false
     end
   end

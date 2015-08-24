@@ -13,6 +13,10 @@
 	<%= f.submit('Submit post', id: 'btn') %>
 <% end %>
 
+<% all_followers.each do |n| %>
+	<%= n %>
+<% end %>
+
 <%= javascript_tag do %>
 	$('#btn').on('click', function() {
 	  combined = $('#post_pre_body').val() + '\n\n<% new_followers.each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
