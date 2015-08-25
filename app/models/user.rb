@@ -32,7 +32,8 @@ class User < ActiveRecord::Base
   	client = User.prepare_access_token(user)
   	response = client.text("#{user.uid}.tumblr.com",
 		{:title => title, :body => body, :format => 'html'})
-    if defined? response.body['meta'].include?[400..401]
+    logger.info response
+    if response['status']
       false
     end
   end
@@ -41,7 +42,7 @@ class User < ActiveRecord::Base
     client = User.prepare_access_token(user)
     client.photo("#{user.uid}.tumblr.com", 
     {:data => [image], :caption => caption, :format => 'html'})
-    if defined? response.body['meta'].include?[400..401]
+    if response['status']
       false
     end
   end
