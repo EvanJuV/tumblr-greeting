@@ -4,8 +4,6 @@
 <% end %>
 <br/>
 
-<%= "Blog id: #{session[:blog_id] || current_user.blogs.first.id}" %>
-<br/>
 <%= label_tag 'Get followers from:' %>
 <select id="blog_id">
 	<% current_user.blogs.each do |b| %>
