@@ -2,6 +2,7 @@ class Users::InteractionsController < ApplicationController
 	before_action :authenticate_user
 
 	def index
+		@new_followers = new_followers(current_user.blogs.find(session[:blog_id] || current_user.blogs.first.id)) 
 	end
 
 	def new_post
