@@ -1,13 +1,19 @@
 class User < ActiveRecord::Base  
-	has_one :list
+	has_many :blogs
 
-  def self.create_with_omniauth(auth)  
+  def self.create_with_omniauth(response)  
     create! do |user|  
-      user.provider = auth["provider"]  
-      user.uid = auth["uid"]  
-      user.name = auth["info"]["name"]
-      user.token = auth.credentials.token
-      user.secret = auth.credentials.secret  
+      logger.info response
+      user.provider = response["provider"]  
+      user.uid = response["uid"]  
+      user.name = response["info"]["name"]
+      user.token = response.credentials.token
+      user.secret = response.credentials.secret
+
+      response.extra.raw_info.blogs.each do |b|
+        new_blog = Blog.new(name: b.name)
+        user.blogs << new_blog
+      end
     end  
   end
 
@@ -22,15 +28,15 @@ class User < ActiveRecord::Base
     client = Tumblr::Client.new
   end
 
-  def self.get_followers(user)
+  def self.get_followers(user, blog)
   	client = User.prepare_access_token(user)
-  	response = client.followers("#{user.uid}.tumblr.com")
+  	response = client.followers("#{blog.name}.tumblr.com")
   	response["users"].map {|u| u["name"]}
   end
 
-  def self.new_text_post(title = '', body, user)
+  def self.new_text_post(title = '', body, user, blog)
   	client = User.prepare_access_token(user)
-  	response = client.text("#{user.uid}.tumblr.com",
+  	response = client.text("#{blog.name}.tumblr.com",
 		{:title => title, :body => body, :format => 'html'})
     logger.info response
     if response['status']
@@ -38,9 +44,9 @@ class User < ActiveRecord::Base
     end
   end
 
-  def self.new_image_post(image, caption, user)
+  def self.new_image_post(image, caption = '', user, blog)
     client = User.prepare_access_token(user)
-    client.photo("#{user.uid}.tumblr.com", 
+    client.photo("#{blog.name}.tumblr.com", 
     {:data => [image], :caption => caption, :format => 'html'})
     if response['status']
       false

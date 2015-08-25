@@ -1,25 +1,47 @@
 <h1>New Followers</h1>
-<% new_followers.each do |n| %>
+<% new_followers(current_user.blogs.find(session[:blog_id] || current_user.blogs.first.id)).each do |n| %>
 	<%= n %>
 <% end %>
+<br/>
+
+<%= "Blog id: #{session[:blog_id] || current_user.blogs.first.id}" %>
+<br/>
+<%= label_tag 'Get followers from:' %>
+<select id="blog_id">
+	<% current_user.blogs.each do |b| %>
+		<option value="<%= b.id %>"><%= b.name %></option>
+	<% end %>
+</select>
 
 <%= form_for :post, :url => url_for(:controller => 'interactions', :action => 'new_post') , method: 'post', html: { multipart: true } do |f| %>
+	<%= f.label(:blog_post_id, 'Post as:') %>
+	<%= f.select(:blog_post_id, options_from_collection_for_select(current_user.blogs, "id", "name")) %>
+	<br/>
 	<%= f.file_field :image, accept: 'image/png,image/gif,image/jpeg' %>
+	<br/>
 	<%= f.label(:title, 'Title') %>
 	<%= f.text_field(:title) %>
+	<br/>
 	<%= f.label(:pre_body, 'Body') %>
 	<%= f.text_area(:pre_body) %>
+	<br/>
 	<%= f.hidden_field :body %>
 	<%= f.submit('Submit post', id: 'btn') %>
 <% end %>
 
-<% all_followers.each do |n| %>
-	<%= n %>
-<% end %>
-
 <%= javascript_tag do %>
 	$('#btn').on('click', function() {
-	  combined = $('#post_pre_body').val() + '\n\n<% new_followers.each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
+	  combined = $('#post_pre_body').val() + '\n\n<% new_followers(current_user.blogs.find(session[:blog_id] || current_user.blogs.first.id)).each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
 	  $('#post_body').val(combined);
-	})
+	});
+	
+	$('#blog_id').change(function() {
+		var id = $('select#blog_id :selected').val();
+		$.ajax({
+			url: 'interactions/change_blog',
+			data: {'blog_id': id},
+			success: function() { location.reload(); },
+			dataType: "script"
+		});
+	});
 <% end %>

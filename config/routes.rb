@@ -6,7 +6,8 @@ Rails.application.routes.draw do
   match "/signout" => "sessions#destroy", :as => :signout, via: [:get]  
 
   namespace :users do
-  	resources :interactions
+  	match "/interactions" => "interactions#index", via: [:get]
   	match "/new_post" => "interactions#new_post", via: [:post]
+  	match "/interactions/change_blog" => "interactions#change_blog", via: [:post, :get]
   end
 end
