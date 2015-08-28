@@ -7,18 +7,43 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
- 	<p class="notice"><%= notice %></p>
-	<p class="alert"><%= alert %></p>
-	<div>
-		<% if current_user %>
-			Welcome, <%= current_user.name %>!
-			<%= link_to "Sign out", signout_path %>
-		<% else %>
-			<%= link_to "Sign in with Tumblr", '/auth/tumblr' %>
+	<div class="ui container">
+		<% if notice %>
+		<div class="ui info message">
+			<i class="close icon"></i>
+			<div class="header">
+				<%= notice %>
+			</div>
+		</div>
 		<% end %>
+		<% if alert %>
+		<div class="ui warning message">
+			<i class="close icon"></i>
+			<div class="header">
+				<%= alert %>
+			</div>
+		</div>
+		<% end %>
+		<div>
+			<% if current_user %>
+				<div class="ui floating message">
+					<p>Welcome, <%= current_user.name %>! <%= link_to "Sign out", signout_path %></p>
+				</div>
+			<% end %>
+		</div>
+
+	<%= yield %>
 	</div>
 
-<%= yield %>
-
+	<%= javascript_tag do %>
+		$('.message .close')
+		  .on('click', function() {
+		    $(this)
+		      .closest('.message')
+		      .transition('fade')
+		    ;
+		  })
+		;
+	<% end %>
 </body>
 </html>

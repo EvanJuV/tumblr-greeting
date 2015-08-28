@@ -7,24 +7,12 @@ class SessionsController < ApplicationController
     user_blogs = user.blogs.map { |b| b.name }
     diff = response_blogs - user_blogs
 
-    logger.info "----- #{response_blogs} --- #{user_blogs} --- #{diff}"
     diff.each do |d|
       new_blog = Blog.new(name: d)
       user.blogs << new_blog
     end
 
-    user.blogs.each do |b|
-      if b.list
-        list = b.list
-        old_followers = list.followers
-        actual_followers = User.get_followers(user, b)
-        list.update(followers: actual_followers, last_followers: old_followers)
-      else
-        actual_followers = User.get_followers(user, b)
-        b.list = List.new(followers: actual_followers, last_followers: nil)
-        b.list.save
-      end
-    end
+    User.update_followers(user)
 
   	session[:user_id] = user.id
   	redirect_to users_interactions_path, :notice => "Signed in!"

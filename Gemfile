@@ -16,6 +16,8 @@ gem 'carrierwave'
 gem 'omniauth-tumblr'
 gem 'tumblr_client'
 gem 'figaro'
+gem 'animate-rails'
+gem 'semantic-ui-sass', github: 'doabit/semantic-ui-sass'
 
 group :development, :test do
   gem 'byebug'

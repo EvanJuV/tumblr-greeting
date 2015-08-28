@@ -30,26 +30,37 @@ class User < ActiveRecord::Base
 
   def self.get_followers(user, blog)
   	client = User.prepare_access_token(user)
-  	response = client.followers("#{blog.name}.tumblr.com")
-  	response["users"].map {|u| u["name"]}
+  	response = client.followers("#{blog.name}.tumblr.com", {:limit => 1, :offset => 1})
+  	logger.info response
+    response["users"].map {|u| u["name"]}
   end
 
-  def self.new_text_post(title = '', body, user, blog)
+  def self.new_text_post(title = '', body, user, blog, commit)
   	client = User.prepare_access_token(user)
   	response = client.text("#{blog.name}.tumblr.com",
-		{:title => title, :body => body, :format => 'html'})
+		{:title => title, :body => body, :format => 'html', :state => commit})
     logger.info response
-    if response['status']
-      false
-    end
+    response['status'] ? false : true
   end
 
-  def self.new_image_post(image, caption = '', user, blog)
+  def self.new_image_post(image, caption = '', user, blog, commit)
     client = User.prepare_access_token(user)
     client.photo("#{blog.name}.tumblr.com", 
-    {:data => [image], :caption => caption, :format => 'html'})
-    if response['status']
-      false
+    {:data => [image], :caption => caption, :format => 'html', :state => commit})
+    response['status'] ? false : true
+  end
+
+  def self.update_followers(user)
+    user.blogs.each do |b|
+      if b.list
+        list = b.list
+        old_followers = list.followers
+        actual_followers = User.get_followers(user, b)
+        list.update(followers: actual_followers, last_followers: old_followers)
+      else
+        actual_followers = User.get_followers(user, b)
+        b.list = List.new(followers: actual_followers, last_followers: nil)
+      end
     end
   end
 end  

@@ -12,6 +12,12 @@
  *
  *= require_tree .
  *= require_self
+ *= require animate
  */
 
-@import "semantic-ui";
+@import 'semantic-ui';
+
+body {
+	margin: 0;
+	padding-top: 10px;
+}

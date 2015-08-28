@@ -1,31 +1,36 @@
-<h1>New Followers</h1>
-<% @new_followers.each do |n| %>
-	<%= n %>
-<% end %>
-<br/>
-
-<%= label_tag 'Get followers from:' %>
-<%= select_tag "blog_id", options_from_collection_for_select(current_user.blogs, "id", "name", session[:blog_id]) %>
-
-<%= form_for :post, :url => url_for(:controller => 'interactions', :action => 'new_post') , method: 'post', html: { multipart: true } do |f| %>
-	<%= f.label(:blog_post_id, 'Post as:') %>
-	<%= f.select(:blog_post_id, options_from_collection_for_select(current_user.blogs, "id", "name")) %>
-	<br/>
-	<%= f.file_field :image, accept: 'image/png,image/gif,image/jpeg' %>
-	<br/>
-	<%= f.label(:title, 'Title') %>
-	<%= f.text_field(:title) %>
-	<br/>
-	<%= f.label(:pre_body, 'Body') %>
-	<%= f.text_area(:pre_body) %>
-	<br/>
-	<%= f.hidden_field :body %>
-	<%= f.submit('Submit post') %>
-<% end %>
+<div class="ui grid">
+		<div class="ui four wide column segment">
+			<h1>New Followers</h1>
+			<% @new_followers.each do |n| %>
+				<%= n %>
+			<% end %>
+			<br/>
+			<%= label_tag 'Get followers from:' %>
+			<%= select_tag "blog_id", options_from_collection_for_select(current_user.blogs, "id", "name", session[:blog_id]) %>
+		</div>
+		<div class="ui twelve wide column segment">
+		<%= form_for :post, :url => url_for(:controller => 'interactions', :action => 'new_post') , method: 'post', html: { multipart: true } do |f| %>
+			<%= f.label(:blog_post_id, 'Post as:') %>
+			<%= f.select(:blog_post_id, options_from_collection_for_select(current_user.blogs, "id", "name")) %>
+			<br/>
+			<%= f.file_field :image, accept: 'image/png,image/gif,image/jpeg' %>
+			<br/>
+			<%= f.label(:title, 'Title') %>
+			<%= f.text_field(:title) %>
+			<br/>
+			<%= f.label(:pre_body, 'Body') %>
+			<%= f.text_area(:pre_body) %>
+			<br/>
+			<%= f.hidden_field :body %>
+			<%= f.submit('Submit post', id: 'submit', name: 'published') %>
+			<%= f.submit('Send to draft', id: 'draft', name: 'draft') %>
+		<% end %>
+		</div>
+</div>
 
 <%= javascript_tag do %>
-	$('#btn').on('click', function() {
-	  combined = $('#post_pre_body').val() + '\n\n<% @new_followers.each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
+	$('#submit, #draft').on('click', function() {
+		combined = $('#post_pre_body').val() + '\n\n<% @new_followers.each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
 	  $('#post_body').val(combined);
 	});
 	
@@ -38,4 +43,8 @@
 			dataType: "script"
 		});
 	});
+
+	$('#post_image').change(function() {
+		$('#post_title').prop('disabled', true);
+	})
 <% end %>
