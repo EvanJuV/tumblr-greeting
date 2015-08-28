@@ -30,7 +30,9 @@ class User < ActiveRecord::Base
 
   def self.get_followers(user, blog)
   	client = User.prepare_access_token(user)
-  	response = client.followers("#{blog.name}.tumblr.com", {:limit => 1, :offset => 1})
+  	response = client.followers("#{blog.name}.tumblr.com", {:limit => 1})
+    users_count = response["total_users"]
+    response = client.followers("#{blog.name}.tumblr.com", {:limit => users_count})
   	logger.info response
     response["users"].map {|u| u["name"]}
   end

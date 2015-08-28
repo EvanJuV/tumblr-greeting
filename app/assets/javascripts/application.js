@@ -15,4 +15,29 @@
 //= require semantic-ui
 //= require turbolinks
 //= require_tree .
+//= require_self
 
+
+$(document).ready(function() {
+	$('select.dropdown').dropdown();
+
+	$('#post_image').change(function() {
+		$('#post_title').prop('disabled', true);
+	});
+
+	$('#blog_id').change(function() {
+		var id = $('select#blog_id :selected').val();
+		$.ajax({
+			url: 'interactions/change_blog',
+			data: {'blog_id': id },
+			success: function(data) { 
+			$('#list').empty();
+			$('#count').empty().append(data.count);
+				data.followers.forEach(function(f) {
+					$('#list').append("<li>" + f + "</li>");
+				});
+			}
+		});
+	});
+	return false;
+});

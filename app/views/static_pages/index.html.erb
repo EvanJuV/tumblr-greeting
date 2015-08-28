@@ -2,5 +2,7 @@
 	<h1 class="big animated fadeInDown">
 		TumblrGreet
 	</h1>
-	<%= link_to 'Sign in with Tumblr', '/auth/tumblr', class: 'massive ui vk button', style: 'margin-left: 15px;'%>
+	<% if !current_user %>
+	<%= link_to 'Sign in with Tumblr', '/auth/tumblr', class: 'massive ui vk button', style: 'margin-left: 15px;', data: { no_turbolink: true }%>
+	<% end %>
 </div>
