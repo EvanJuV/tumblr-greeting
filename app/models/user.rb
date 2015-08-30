@@ -37,11 +37,13 @@ class User < ActiveRecord::Base
 
     while users_count > 0
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
-      followers << response["users"].map {|u| u["name"]}
+      response["users"].each do |u|
+        followers << u["name"]
+      end
       offset += 20
       users_count -= 20
     end
-
+    logger.info followers
     followers
   end
 

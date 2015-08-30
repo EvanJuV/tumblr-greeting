@@ -26,6 +26,11 @@ $(document).ready(function() {
 
 	$('#blog_id').change(updateBlog);
 
+	$('#submit, #draft').on('click', function() {
+		combined = $('#post_pre_body').val() + '\n\n' + $('#post_body').val();
+	  $('#post_body').empty().val(combined);
+	});
+
 	function updateBlog() {
 		var id = $('select#blog_id :selected').val();
 		$.ajax({
@@ -36,6 +41,7 @@ $(document).ready(function() {
 				$('#count').empty().append(data.count);
 				data.followers.forEach(function(f) {
 					$('#list').append("<li>" + f + "</li>");
+					$('#post_body').empty().append('<a spellcheck="false" class="tumblelog">' + f + '</a> ');
 				});
 			}
 		});

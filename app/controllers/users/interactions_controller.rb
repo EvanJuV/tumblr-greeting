@@ -30,7 +30,7 @@ class Users::InteractionsController < ApplicationController
 	def change_blog
 		blog_id = params[:blog_id] || current_user.blogs.first.id
 		session[:blog_id] = blog_id
-		new_followers = current_user.blogs.find(blog_id).list.new_followers[0]
+		new_followers = current_user.blogs.find(blog_id).list.new_followers
 		respond_to do |format|
 			format.json { render json: {:followers => new_followers, :count => new_followers.size } }
 		end
