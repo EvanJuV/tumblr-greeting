@@ -17,7 +17,6 @@
 //= require_tree .
 //= require_self
 
-
 $(document).ready(function() {
 	$('select.dropdown').dropdown();
 
@@ -25,19 +24,22 @@ $(document).ready(function() {
 		$('#post_title').prop('disabled', true);
 	});
 
-	$('#blog_id').change(function() {
+	$('#blog_id').change(updateBlog);
+
+	function updateBlog() {
 		var id = $('select#blog_id :selected').val();
 		$.ajax({
 			url: 'interactions/change_blog',
 			data: {'blog_id': id },
 			success: function(data) { 
-			$('#list').empty();
-			$('#count').empty().append(data.count);
+				$('#list').empty();
+				$('#count').empty().append(data.count);
 				data.followers.forEach(function(f) {
 					$('#list').append("<li>" + f + "</li>");
 				});
 			}
 		});
-	});
+	}
 	return false;
 });
+

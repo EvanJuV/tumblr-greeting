@@ -14,8 +14,4 @@ class ApplicationController < ActionController::Base
       redirect_to root_path, alert: "You must sign in before you do that"  
     end
   end
-
-  def new_followers(blog)
-    blog.list.followers - blog.list.last_followers
-  end
 end

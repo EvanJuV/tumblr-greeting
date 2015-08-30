@@ -32,9 +32,17 @@ class User < ActiveRecord::Base
   	client = User.prepare_access_token(user)
   	response = client.followers("#{blog.name}.tumblr.com", {:limit => 1})
     users_count = response["total_users"]
-    response = client.followers("#{blog.name}.tumblr.com", {:limit => users_count})
-  	logger.info response
-    response["users"].map {|u| u["name"]}
+    followers = []
+    offset = 0
+
+    while users_count > 0
+      response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
+      followers << response["users"].map {|u| u["name"]}
+      offset += 20
+      users_count -= 20
+    end
+
+    followers
   end
 
   def self.new_text_post(title = '', body, user, blog, commit)
@@ -58,10 +66,10 @@ class User < ActiveRecord::Base
         list = b.list
         old_followers = list.followers
         actual_followers = User.get_followers(user, b)
-        list.update(followers: actual_followers, last_followers: old_followers)
+        list.update(followers: actual_followers, last_followers: old_followers, new_followers: actual_followers - old_followers)
       else
         actual_followers = User.get_followers(user, b)
-        b.list = List.new(followers: actual_followers, last_followers: nil)
+        b.list = List.new(followers: actual_followers, last_followers: nil, new_followers: actual_followers)
       end
     end
   end

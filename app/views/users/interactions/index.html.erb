@@ -2,11 +2,14 @@
 	<div class="ui four wide column">
 		<div class="ui segment form">
 		<h1>New Followers</h1>
-		<p>You've got <span id="count"></span> new followers!</p>
+		<p>You've got <span id="count"><%= current_user.blogs.find(session[:blog_id] || current_user.blogs.first.id ).list.new_followers[0].size %></span> new followers!</p>
 			<div class="field">
 				<%= label_tag 'Get followers from:' %>
 				<%= select_tag "blog_id", options_from_collection_for_select(current_user.blogs, "id", "name", session[:blog_id]), class: 'ui dropdown' %> 
 				<ul id="list">
+					<% current_user.blogs.find(session[:blog_id] || current_user.blogs.first.id ).list.new_followers[0].each do |f| %>
+						<li><%= f %></li>
+					<% end %>
 				</ul>
 			</div>
 		</div>
@@ -43,7 +46,7 @@
 
 <%= javascript_tag do %>
 	$('#submit, #draft').on('click', function() {
-		combined = $('#post_pre_body').val() + '\n\n<% new_followers(current_user.blogs.find(session[:blog_id])).each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
+		combined = $('#post_pre_body').val() + '\n\n<% current_user.blogs.find(session[:blog_id] || current_user.blogs.first.id).list.new_followers[0].each do |n| %><a spellcheck="false" class="tumblelog"><%= n %></a><% end %>&nbsp;';
 	  $('#post_body').val(combined);
 	});
 <% end %>
