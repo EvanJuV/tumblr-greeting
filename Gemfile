@@ -26,6 +26,6 @@ end
 
 group :production do
 	gem 'thin'
-	gem 'pg'
+	gem 'mysql2'
 end
 
