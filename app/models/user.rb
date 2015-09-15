@@ -33,7 +33,9 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = blog.list.followers[0 .. 4]
+    unless blog.list.followers.nil?
+      actual_followers = blog.list.followers[0 .. 4]
+    end
       
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
