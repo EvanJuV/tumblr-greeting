@@ -5,6 +5,7 @@
   <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
+  <meta name="viewport" content="width=device-width, user-scalable=no">
 </head>
 <body>
 	<div class="ui container">
@@ -27,7 +28,7 @@
 		<div>
 			<% if current_user %>
 				<div class="ui floating message">
-					<p>Welcome, <%= current_user.name %>! <%= link_to "Sign out", signout_path %></p>
+					<p>Welcome, <%= current_user.name %>! <%= link_to "Sign out", signout_path, data: { no_turbolink: true } %></p>
 				</div>
 			<% end %>
 		</div>

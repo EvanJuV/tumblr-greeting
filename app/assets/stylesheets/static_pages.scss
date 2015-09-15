@@ -2,16 +2,13 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
-// .center {
-// 	margin-top: 50%;
-// }
-
-.big {
-	font-size: 4em;
-	text-align: center;
-}
-
-.center {
+div.center {
 	padding-top: 30%;
 	text-align: center;
 }
+
+.big {
+	font-size: 5em;
+	text-align: center;
+}
+

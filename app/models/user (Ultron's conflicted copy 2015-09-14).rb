@@ -34,13 +34,13 @@ class User < ActiveRecord::Base
     offset = 0
     coincidences = 0
     actual_followers = blog.list.followers.limit(5)
-      
+
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
-      if !response["users"].nil?
+      unless response["users"].nil?
         offset += 20
         response["users"].each do |u|
-          if actual_followers.includes? u["name"]
+          if actual_followers.includes? u["name"] 
             coincidences++
           end
           break if coincidences >= 2
