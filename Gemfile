@@ -26,7 +26,7 @@ end
 
 group :production do
 	gem 'thin'
-	gem 'mysql2'
+	gem 'mysql2', '~> 0.3.18'
 	gem 'therubyracer', :platforms => :ruby
 	gem 'execjs'
 end
