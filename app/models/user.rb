@@ -33,8 +33,9 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    unless blog.list.followers.nil?
-      actual_followers = blog.list.followers[0 .. 4]
+    actual_followers = []
+    unless blog.list.nil?
+      actual_followers = blog.list.last_followers[0 .. 4]
     end
       
     loop do
