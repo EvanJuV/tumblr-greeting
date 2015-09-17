@@ -32,7 +32,7 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = blog.followers.limit(5)
+    actual_followers = blog.followers.limit(5).where(status: 'old').map { |f| f.name }
       
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
@@ -75,18 +75,6 @@ class User < ActiveRecord::Base
         flash[:alert] = "Followers couldn't be retrieved"
         redirect_to root_path 
       end 
-
-      # if b.followers
-      #   list = b.list
-      #   old_followers = list.followers
-      #   actual_followers = User.get_followers(user, b)
-      #   list.update(followers: actual_followers, last_followers: old_followers, 
-      #     new_followers: actual_followers - old_followers)
-      # else
-      #   actual_followers = User.get_followers(user, b)
-      #   b.list = List.new(followers: actual_followers, last_followers: nil, 
-      #     new_followers: actual_followers)
-      # end
     end
   end
 end
