@@ -43,7 +43,6 @@ $(document).ready(function() {
 				data.followers.forEach(function(f) {
 					$('#list').append("<li>" + f.name + "</li>");
 					$('#post_body').empty().val('<a spellcheck="false" class="tumblelog">' + f.name + '</a> ');
-					console.log(f);
 				});
 			}
 		});
