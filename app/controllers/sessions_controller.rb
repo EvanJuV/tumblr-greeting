@@ -7,9 +7,15 @@ class SessionsController < ApplicationController
     user_blogs = user.blogs.map { |b| b.name }
     diff = response_blogs - user_blogs
 
-    diff.each do |d|
-      new_blog = Blog.new(name: d)
-      user.blogs << new_blog
+    if diff.size > 0
+      diff.each do |d|
+        new_blog = Blog.new(name: d)
+        user.blogs << new_blog
+      end
+
+      unless user.save
+        flash[:alert] = "User could not be updated"
+      end
     end
 
     User.update_followers(user)

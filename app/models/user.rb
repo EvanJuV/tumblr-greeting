@@ -3,7 +3,6 @@ class User < ActiveRecord::Base
 
   def self.create_with_omniauth(response)  
     create! do |user|  
-      logger.info response
       user.provider = response["provider"]  
       user.uid = response["uid"]  
       user.name = response["info"]["name"]
@@ -33,10 +32,7 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = []
-    unless blog.list.nil?
-      actual_followers = blog.list.last_followers[0 .. 4]
-    end
+    actual_followers = blog.followers.limit(5)
       
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
@@ -52,7 +48,7 @@ class User < ActiveRecord::Base
         break if offset >= 49999 || response["users"].size < 20 || coincidences >= 2
       end
     end
-    followers
+    followers - actual_followers
   end
 
   def self.new_text_post(title = '', body, user, blog, commit)
@@ -71,17 +67,26 @@ class User < ActiveRecord::Base
 
   def self.update_followers(user)
     user.blogs.each do |b|
-      if b.list
-        list = b.list
-        old_followers = list.followers
-        actual_followers = User.get_followers(user, b)
-        list.update(followers: actual_followers, last_followers: old_followers, 
-          new_followers: actual_followers - old_followers)
-      else
-        actual_followers = User.get_followers(user, b)
-        b.list = List.new(followers: actual_followers, last_followers: nil, 
-          new_followers: actual_followers)
+      b.followers.update_all("status = 'old'")
+      User.get_followers(user, b).each do |f|
+        b.followers << Follower.new(name: f, status: 'new')
       end
+      unless b.save
+        flash[:alert] = "Followers couldn't be retrieved"
+        redirect_to root_path 
+      end 
+
+      # if b.followers
+      #   list = b.list
+      #   old_followers = list.followers
+      #   actual_followers = User.get_followers(user, b)
+      #   list.update(followers: actual_followers, last_followers: old_followers, 
+      #     new_followers: actual_followers - old_followers)
+      # else
+      #   actual_followers = User.get_followers(user, b)
+      #   b.list = List.new(followers: actual_followers, last_followers: nil, 
+      #     new_followers: actual_followers)
+      # end
     end
   end
 end

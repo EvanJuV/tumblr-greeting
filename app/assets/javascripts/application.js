@@ -41,8 +41,8 @@ $(document).ready(function() {
 				$('#list').empty();
 				$('#count').empty().append(data.count);
 				data.followers.forEach(function(f) {
-					$('#list').append("<li>" + f + "</li>");
-					$('#post_body').empty().val('<a spellcheck="false" class="tumblelog">' + f + '</a> ');
+					$('#list').append("<li>" + f.name + "</li>");
+					$('#post_body').empty().val('<a spellcheck="false" class="tumblelog">' + f.name + '</a> ');
 					console.log(f);
 				});
 			}

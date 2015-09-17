@@ -1,4 +1,4 @@
 class Blog < ActiveRecord::Base
 	belongs_to :user
-	has_one :list
+	has_many :followers
 end
