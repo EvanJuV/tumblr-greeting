@@ -68,7 +68,8 @@ class User < ActiveRecord::Base
   def self.update_followers(user)
     user.blogs.each do |b|
       b.followers.update_all("status = 'old'")
-      User.get_followers(user, b).each do |f|
+      new_followers = User.get_followers(user, b)
+      new_followers.each do |f|
         b.followers << Follower.new(name: f, status: 'new')
       end
       unless b.save
