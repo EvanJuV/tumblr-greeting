@@ -25,7 +25,7 @@ $(document).ready(function() {
 	});
 
 	$('#blog_id').change(updateBlog);
-	//$(document).ready(updateBlog);
+	$(document).ready(updateBlog);
 
 	$('#submit, #draft').on('click', function() {
 		combined = $('#post_pre_body').val() + '\n\n' + $('#post_body').val();
@@ -40,10 +40,13 @@ $(document).ready(function() {
 			success: function(data) { 
 				$('#list').empty();
 				$('#count').empty().append(data.count);
+				$('post_body').empty();
+				var string = '';
 				data.followers.forEach(function(f) {
 					$('#list').append("<li>" + f.name + "</li>");
-					$('#post_body').empty().val('<a spellcheck="false" class="tumblelog">' + f.name + '</a> ');
+					string += '<a spellcheck="false" class="tumblelog">' + f.name + '</a> ';
 				});
+				$('#post_body').val(string);
 			}
 		});
 	}

@@ -14,7 +14,7 @@ class SessionsController < ApplicationController
       end
 
       unless user.save
-        flash[:alert] = "User could not be updated"
+        flash[:alert] = "Blogs could not be updated"
       end
     end
 
