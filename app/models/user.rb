@@ -27,12 +27,25 @@ class User < ActiveRecord::Base
     client = Tumblr::Client.new
   end
 
+  def update_blogs(response_blogs)
+    user_blogs = blogs.map { |b| b.name }
+    diff = response_blogs - user_blogs
+
+    if diff.size > 0
+      diff.each do |d|
+        self.blogs.create(name: d)
+      end
+    end
+  end
+
   def self.get_followers(user, blog)
   	client = User.prepare_access_token(user)
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = blog.followers.limit(5).where(status: 'old').map { |f| f.name }
+    actual_followers = blog.followers.older.limit(5).map { |f| f.name }
+    if blog.name == 'designcloud' ||  blog.name == 'minuscule-partners'
+      return []
       
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
@@ -65,17 +78,13 @@ class User < ActiveRecord::Base
     response['status'] ? false : true
   end
 
-  def self.update_followers(user)
-    user.blogs.each do |b|
-      b.followers.update_all("status = 'old'")
-      new_followers = User.get_followers(user, b)
+  def update_followers
+    blogs.each do |b|
+      b.followers.newer.update_all("status = 'old'")
+      new_followers = User.get_followers(self, b)
       new_followers.each do |f|
-        b.followers << Follower.new(name: f, status: 'new')
+        b.followers.create(name: f, status: 'new')
       end
-      unless b.save
-        flash[:alert] = "Followers couldn't be retrieved"
-        redirect_to root_path 
-      end 
     end
   end
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150917075217) do
+ActiveRecord::Schema.define(version: 20150923063445) do
 
   create_table "blogs", force: :cascade do |t|
     t.string   "name"
@@ -27,6 +27,9 @@ ActiveRecord::Schema.define(version: 20150917075217) do
     t.datetime "updated_at", null: false
     t.integer  "blog_id"
   end
+
+  add_index "followers", ["id", "blog_id"], name: "index_followers_on_id_and_blog_id"
+  add_index "followers", ["id"], name: "index_followers_on_id"
 
   create_table "posts", force: :cascade do |t|
     t.string   "image"
