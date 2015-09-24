@@ -43,7 +43,7 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = blog.followers.older.limit(5).map { |f| f.name }
+    actual_followers = blog.followers.older.limit(20).map { |f| f.name }
     if blog.name == 'designcloud' ||  blog.name == 'minuscule-partners'
       return []
     end
@@ -56,10 +56,10 @@ class User < ActiveRecord::Base
           if actual_followers.include? u["name"]
             coincidences += 1
           end
-          break if coincidences >= 3
+          break if coincidences >= 15
           followers << u["name"]
         end
-        break if offset >= 49999 || response["users"].size < 20 || coincidences >= 3
+        break if offset >= 49999 || response["users"].size < 20 || coincidences >= 15
       end
     end
     followers - actual_followers
