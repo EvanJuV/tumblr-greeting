@@ -46,6 +46,7 @@ class User < ActiveRecord::Base
     actual_followers = blog.followers.older.limit(5).map { |f| f.name }
     if blog.name == 'designcloud' ||  blog.name == 'minuscule-partners'
       return []
+    end
       
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
