@@ -74,7 +74,7 @@ class User < ActiveRecord::Base
 
   def self.new_image_post(image, caption = '', user, blog, commit)
     client = User.prepare_access_token(user)
-    client.photo("#{blog.name}.tumblr.com", 
+    response = client.photo("#{blog.name}.tumblr.com", 
     {:data => [image], :caption => caption, :format => 'html', :state => commit})
     response['status'] ? false : true
   end
