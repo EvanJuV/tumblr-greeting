@@ -43,7 +43,7 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = blog.followers.older.limit(20).map { |f| f.name }
+    actual_followers = blog.followers.older.order("id desc").limit(20).map { |f| f.name }
     if blog.name == 'designcloud' ||  blog.name == 'minuscule-partners'
       return []
     end
