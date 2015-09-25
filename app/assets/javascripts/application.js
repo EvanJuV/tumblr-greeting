@@ -25,7 +25,10 @@ $(document).ready(function() {
 	});
 
 	$('#blog_id').change(updateBlog);
-	$(document).ready(updateBlog);
+	$(document).ready(function() {
+		if(window.location.pathname == '/users/interactions')
+			updateBlog();
+	});
 
 	$('#submit, #draft').on('click', function() {
 		combined = $('#post_pre_body').val() + '\n\n' + $('#post_body').val();

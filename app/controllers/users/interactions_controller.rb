@@ -32,7 +32,7 @@ class Users::InteractionsController < ApplicationController
 		session[:blog_id] = blog_id
 		new_followers = current_user.blogs.find(blog_id).followers.where(status: 'new')
 		respond_to do |format|
-			format.json { render json: {:followers => new_followers, :count => new_followers.size } }
+			format.json { render json: {:followers => new_followers.reverse, :count => new_followers.size } }
 		end
 	end
 

@@ -43,7 +43,8 @@ class User < ActiveRecord::Base
     followers = []
     offset = 0
     coincidences = 0
-    actual_followers = blog.followers.older.order("id desc").limit(20).map { |f| f.name }
+    actual_followers = blog.followers.older.order('id desc').limit(20).map { |f| f.name }
+    logger.info actual_followers
     if blog.name == 'designcloud' ||  blog.name == 'minuscule-partners'
       return []
     end
@@ -55,14 +56,15 @@ class User < ActiveRecord::Base
         response["users"].each do |u|
           if actual_followers.include? u["name"]
             coincidences += 1
+          else
+            followers << u["name"]
           end
-          break if coincidences >= 15
-          followers << u["name"]
+          break if coincidences >= 1
         end
-        break if offset >= 50000 || response["users"].size < 20 || coincidences >= 15
+        break if offset >= 50000 || response["users"].size < 20 || coincidences >= 1
       end
     end
-    followers - actual_followers
+    followers.reverse
   end
 
   def self.new_text_post(title = '', body, user, blog, commit)
