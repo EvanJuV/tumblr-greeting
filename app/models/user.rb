@@ -59,9 +59,9 @@ class User < ActiveRecord::Base
           else
             followers << u["name"]
           end
-          break if coincidences >= 1
+          break if coincidences >= 10
         end
-        break if offset >= 50000 || response["users"].size < 20 || coincidences >= 1
+        break if offset >= 50000 || response["users"].size < 20 || coincidences >= 10
       end
     end
     followers.reverse
