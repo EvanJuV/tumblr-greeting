@@ -51,8 +51,9 @@ class User < ActiveRecord::Base
       
     loop do
       response = client.followers("#{blog.name}.tumblr.com", {:offset => offset})
+      logger.info "#{response}\n ------ offset: #{offset}\n --------- coincidences: #{coincidences}"
       unless response["users"].nil?
-        offset += 20
+        offset += response["users"].size
         response["users"].each do |u|
           if actual_followers.include? u["name"]
             coincidences += 1
@@ -61,7 +62,7 @@ class User < ActiveRecord::Base
           end
           break if coincidences >= 10
         end
-        break if offset >= 50000 || response["users"].size < 20 || coincidences >= 10
+        break if offset >= 50000 || response["users"].size == 0 || coincidences >= 10
       end
     end
     followers.reverse
